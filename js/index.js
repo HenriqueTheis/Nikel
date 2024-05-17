@@ -12,24 +12,21 @@ document.getElementById("login-form").addEventListener("submit", function(e){
    const senha = document.getElementById("password-input").value;
    const checkSession = document.getElementById("session-input").checked;
 
-
-
-   if(!account) {
-      alert("Opps! Verifique o usuário ou a senha!");
-      return;
-   }
-
-   if(account) {
-      if(account.password !== senha) {
-         alert("Opps! Verifique o usuário ou a senha!");
-         return;
-      }
-
-      saveSession(email, checkSession);
+   axios.post('http://localhost:3333/login',{
+      login: email,
+      password: senha,
+   })
+  .then(function (response) {
+    console.log(response);
+    saveSession({email,senha}, checkSession);
 
       window.location.href = "home.html";
-
-   }
+  })
+  .catch(function (error) {
+    const msg = error.response.data.msg;
+    alert(msg);
+  })
+ 
 });
 
 //CRIAR CONTA
@@ -49,11 +46,22 @@ document.getElementById("create-form").addEventListener("submit", function(e){
     return;
    }
 
-   saveAccount ({
+   axios.post('http://localhost:3333/users',{
       login: email,
       password: senha,
-      transactions: []
-   });
+   })
+  .then(function (response) {
+    console.log(response);
+    //saveSession({email,senha}, checkSession);
+   
+    myModal.hide();  
+    alert(response.data.msg);
+  })
+  .catch(function (error) {
+    const msg = error.response.data.msg;
+    alert(msg);
+  })
+ 
 
    myModal.hide();
 
@@ -78,19 +86,11 @@ function saveAccount(data) {
 
 function saveSession(data, saveSession) {
    if(saveSession) {
-      localStorage.setItem("session", data);
+      localStorage.setItem("session", JSON.stringify(data));// se ele deixou marcado, salva no localStorage
    }
 
-   sessionStorage.setItem("logged", data);
+   sessionStorage.setItem("logged", JSON.stringify(data));//se ele não deixar marcado, ele salva no sessionStorage
 }
 
-function getAccount(key) {
-   const account = localStorage.getItem(key);
 
-   if(account){
-      return JSON.parse(account);
-   }
-
-   return "";
-}
 
